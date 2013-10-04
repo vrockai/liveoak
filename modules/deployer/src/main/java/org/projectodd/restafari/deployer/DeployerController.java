@@ -2,42 +2,47 @@ package org.projectodd.restafari.deployer;
 
 import org.projectodd.restafari.spi.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
- * @author: lball@redhat.com
+ * @author lball@redhat.com
  */
 public class DeployerController implements ResourceController {
     @Override
     public void initialize(ControllerContext context) throws InitializationException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Read controller context config and monitor a deployments directory
     }
 
     @Override
     public void destroy() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Is this just undeploying a controller?
     }
 
     @Override
     public void getResource(RequestContext context, String collectionName, String id, Responder responder) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        responder.resource(new DeploymentResource());
     }
 
     @Override
     public void getResources(RequestContext context, String collectionName, Pagination pagination, Responder responder) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Return the current deployments as a set of resources
+        Collection<Resource> resources = new ArrayList<Resource>();
+        responder.resources(resources);
     }
 
     @Override
     public void createResource(RequestContext context, String collectionName, Resource resource, Responder responder) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Deploy a new controller?
     }
 
     @Override
     public void updateResource(RequestContext context, String collectionName, String id, Resource resource, Responder responder) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // Update a controller's configuration?
     }
 
     @Override
     public void deleteResource(RequestContext context, String collectionName, String id, Responder responder) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        // again - just undeploy the controller?
     }
 }
