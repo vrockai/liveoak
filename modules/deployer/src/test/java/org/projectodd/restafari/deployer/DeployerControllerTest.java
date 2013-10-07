@@ -30,6 +30,7 @@ public class DeployerControllerTest {
     @BeforeClass
     public static void init() {
         config = new SimpleConfig();
+        config.put("mbaas.deployer.dir", System.getProperty("user.dir"));
         Container container = new Container();
         try {
             container.registerResourceController("deployer", new DeployerController(), config);
