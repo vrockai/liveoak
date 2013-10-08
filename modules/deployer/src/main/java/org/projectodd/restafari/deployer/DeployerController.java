@@ -47,7 +47,7 @@ public class DeployerController implements ResourceController {
      */
     @Override
     public void getResource(RequestContext context, String collectionName, String id, Responder responder) {
-        responder.resource(new DeploymentResource());
+        responder.resource(new DeploymentResource(id));
     }
 
     /**

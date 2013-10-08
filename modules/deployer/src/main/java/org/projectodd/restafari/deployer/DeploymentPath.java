@@ -58,9 +58,9 @@ public class DeploymentPath {
                             continue;
                         }
 
+                        // outstanding question here - do we send a message on the event bus to create these?
                         if (kind == ENTRY_CREATE) {
                             // create a DeploymentResource
-
                         } else if (kind == ENTRY_DELETE) {
                             // delete the DeploymentResource
                         } else if (kind == ENTRY_MODIFY) {
