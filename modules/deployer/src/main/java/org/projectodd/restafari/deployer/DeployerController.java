@@ -22,7 +22,8 @@ public class DeployerController implements ResourceController {
         // Read controller context config and monitor a deployments directory
         try {
             vertx = context.getVertx();
-            deploymentPath = new DeploymentPath(context.getConfig().get("mbaas.deployer.dir", System.getProperty("user.dir")));
+            String dir = context.getConfig().get("mbaas.deployer.dir", System.getProperty("user.dir"));
+            deploymentPath = new DeploymentPath(dir, vertx);
         } catch (IOException e) {
             System.err.println("Cannot initialize the deployer. " + e.getMessage());
         }
