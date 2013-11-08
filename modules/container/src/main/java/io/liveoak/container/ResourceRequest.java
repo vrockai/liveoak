@@ -163,7 +163,7 @@ public class ResourceRequest {
                     obj.returnFields = ReturnFields.ALL;
                 }
 
-                obj.requestContext = new DefaultRequestContext(SecurityContext.ANONYMOUS, obj.pagination, obj.returnFields, obj.params, obj.resourcePath, obj.requestType, obj.requestAttributes, obj.sorting);
+                obj.requestContext = new DefaultRequestContext(new DefaultSecurityContext(), obj.pagination, obj.returnFields, obj.params, obj.resourcePath, obj.requestType, obj.requestAttributes, obj.sorting);
             }
             return obj;
         }
