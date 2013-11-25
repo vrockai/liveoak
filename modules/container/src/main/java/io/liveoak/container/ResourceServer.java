@@ -63,7 +63,6 @@ public class ResourceServer {
     public void stop() throws Exception {
         this.servers.forEach((s) -> {
             try {
-                System.err.println( "STOP: " + s );
                 s.stop();
             } catch (Exception e) {
                 e.printStackTrace();

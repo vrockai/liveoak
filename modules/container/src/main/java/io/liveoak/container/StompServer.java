@@ -75,9 +75,7 @@ public class StompServer implements NetworkServer {
 
     @Override
     public void stop() throws Exception {
-        System.err.println( "stopping stomp server" );
         this.group.shutdownGracefully().sync();
-        System.err.println( "stopped stomp server" );
     }
 
     private ResourceServer server;

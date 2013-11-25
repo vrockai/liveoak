@@ -66,8 +66,6 @@ public class ResourceRequestDecodingHandler implements HttpHandler {
 
             String method = exchange.getRequestMethod().toString();
 
-            System.err.println( "EXCHANGE: " + exchange );
-
             if ("POST".equals(method)) {
                 HeaderValues contentTypeHeader = exchange.getRequestHeaders().get("Content-Type");
                 MediaType contentType = new MediaType(contentTypeHeader.getFirst());

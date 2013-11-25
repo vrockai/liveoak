@@ -40,14 +40,12 @@ public class BasicServerTest {
 
     @Before
     public void setUpServer() throws Exception {
-        System.err.println( "*** SET UP SERVER" );
         this.container = new DefaultContainer();
         InMemoryDBResource resource = new InMemoryDBResource("memory");
         this.container.registerResource(resource, new SimpleConfig());
 
         this.server = ResourceServer.createDefaultResourceServer(this.container, "localhost" );
         this.server.start();
-        System.err.println( "*** SET UP SERVER COMPLETE" );
     }
 
     @Before
@@ -62,10 +60,8 @@ public class BasicServerTest {
 
     @After
     public void tearDownServer() throws Exception {
-        System.err.println( "*** TEAR DOWN SERVER" );
         this.server.stop();
         System.err.flush();
-        System.err.println( "*** TEAR DOWN SERVER COMPLETE" );
     }
 
     protected ResourceState decode(HttpResponse response) throws Exception {

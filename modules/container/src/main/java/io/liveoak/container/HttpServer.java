@@ -50,9 +50,7 @@ public class HttpServer implements NetworkServer {
      * @throws InterruptedException If interrupted before completely stopping.
      */
     public void stop() throws Exception {
-        System.err.println( "stopping undertwo" );
         this.httpServer.stop();
-        System.err.println( "stopped undertwo" );
     }
 
     public DefaultContainer container() {
