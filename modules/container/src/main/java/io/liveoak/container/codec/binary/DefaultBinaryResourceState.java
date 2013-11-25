@@ -5,6 +5,8 @@
  */
 package io.liveoak.container.codec.binary;
 
+import java.io.InputStream;
+
 import io.liveoak.container.codec.DefaultResourceState;
 import io.liveoak.spi.MediaType;
 import io.liveoak.spi.state.BinaryResourceState;
@@ -15,13 +17,13 @@ import io.netty.buffer.ByteBuf;
  */
 public class DefaultBinaryResourceState extends DefaultResourceState implements BinaryResourceState {
 
-    ByteBuf buffer;
+    private InputStream inputStream;
 
     public DefaultBinaryResourceState() {
     }
 
-    public DefaultBinaryResourceState(ByteBuf buffer) {
-        this.buffer = buffer;
+    public DefaultBinaryResourceState(InputStream inputStream) {
+        this.inputStream = inputStream;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class DefaultBinaryResourceState extends DefaultResourceState implements 
     }
 
     @Override
-    public ByteBuf getBuffer() {
-        return buffer;
+    public InputStream getInputStream() {
+        return inputStream;
     }
 }

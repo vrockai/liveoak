@@ -14,7 +14,9 @@ import io.liveoak.spi.resource.async.Resource;
 import io.liveoak.spi.state.ResourceState;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.xnio.channels.StreamSourceChannel;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,16 +33,16 @@ public class ResourceCodecManager {
         this.codecs.add(new CodecRegistration(new MediaType(mediaType), codec));
     }
 
-    public ResourceState decode(MediaType mediaType, ByteBuf buf) throws Exception {
+    public ResourceState decode(MediaType mediaType, InputStream in) throws Exception {
         if (MediaType.OCTET_STREAM.equals(mediaType)) {
-            return new DefaultBinaryResourceState(buf.retain());
+            return new DefaultBinaryResourceState(in);
         }
 
         ResourceCodec codec = getResourceCodec(mediaType);
         if (codec == null || !codec.hasDecoder()) {
             throw new UnsupportedMediaTypeException(Collections.singletonList(mediaType));
         }
-        return codec.decode(buf);
+        return codec.decode(in);
     }
 
     public EncodingResult encode(RequestContext ctx, MediaTypeMatcher mediaTypeMatcher, Resource resource) throws Exception {

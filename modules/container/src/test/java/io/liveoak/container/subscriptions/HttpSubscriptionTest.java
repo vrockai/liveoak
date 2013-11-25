@@ -3,7 +3,6 @@ package io.liveoak.container.subscriptions;
 import io.liveoak.container.*;
 import io.liveoak.container.codec.DefaultResourceState;
 import io.liveoak.spi.RequestContext;
-import io.liveoak.spi.ResourceException;
 import io.liveoak.spi.ResourceNotFoundException;
 import io.liveoak.spi.state.ResourceState;
 import org.junit.After;
@@ -19,7 +18,7 @@ import static org.junit.Assert.*;
 public class HttpSubscriptionTest {
 
     protected DefaultContainer container;
-    protected UnsecureServer server;
+    protected ResourceServer server;
     protected DirectConnector connector;
 
     @Before
@@ -31,7 +30,7 @@ public class HttpSubscriptionTest {
         resource.addMember(new InMemoryCollectionResource(resource, "notifications"));
         this.container.registerResource(resource, new SimpleConfig());
 
-        this.server = new UnsecureServer(this.container, "localhost", 8080);
+        this.server = ResourceServer.createDefaultResourceServer( this.container, "localhost" );
         this.server.start();
 
         this.connector = this.container.directConnector();

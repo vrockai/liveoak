@@ -6,10 +6,12 @@
 package io.liveoak.container.responders;
 
 import io.liveoak.container.ResourceRequest;
+import io.liveoak.container.ResourceResponseSink;
 import io.liveoak.spi.ResourcePath;
 import io.liveoak.spi.resource.BlockingResource;
 import io.liveoak.spi.resource.async.Resource;
 import io.netty.channel.ChannelHandlerContext;
+import io.undertow.server.HttpServerExchange;
 
 import java.util.concurrent.Executor;
 
@@ -18,11 +20,11 @@ import java.util.concurrent.Executor;
  */
 public abstract class TraversingResponder extends BaseResponder {
 
-    public TraversingResponder(Executor executor, Resource root, ResourceRequest inReplyTo, ChannelHandlerContext ctx) {
-        super(inReplyTo, ctx);
+    public TraversingResponder(Executor executor, Resource root, ResourceRequest inReplyTo, ResourceResponseSink sink) {
+        super(inReplyTo, sink);
         this.executor = executor;
         this.currentResource = root;
-        this.remainingPath = inReplyTo.resourcePath().subPath();
+        this.remainingPath = inReplyTo().resourcePath().subPath();
     }
 
     @Override
@@ -42,7 +44,6 @@ public abstract class TraversingResponder extends BaseResponder {
     }
 
     public void doRead(String next, Resource resource) {
-
         if (resource instanceof BlockingResource) {
             this.executor.execute(() -> {
                 try {

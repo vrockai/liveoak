@@ -7,11 +7,15 @@ package io.liveoak.container;
 
 import io.liveoak.container.codec.MediaTypeMatcher;
 import io.liveoak.spi.resource.async.Resource;
+import io.undertow.util.AttachmentKey;
 
 /**
  * @author Bob McWhirter
  */
 public class ResourceResponse {
+
+
+    public static final AttachmentKey<ResourceResponse> ATTACHMENT_KEY = AttachmentKey.create( ResourceResponse.class );
 
     public enum ResponseType {
         CREATED,

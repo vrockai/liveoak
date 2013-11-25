@@ -102,7 +102,7 @@ public class SubscriptionManager implements RootResource {
             httpClient.setHost(destinationUri.getHost());
             httpClient.setPort(destinationUri.getPort());
 
-            HttpSubscription sub = new HttpSubscription(this, httpClient, path, destinationUri, codec);
+            HttpSubscription sub = new HttpSubscription(this, httpClient, path, destinationUri, contentType, codec);
             addSubscription(sub);
             responder.resourceCreated(sub);
         } catch (URISyntaxException e) {
@@ -117,6 +117,7 @@ public class SubscriptionManager implements RootResource {
     public void resourceCreated(Resource resource) {
         getSubscriptions(resource).forEach((e) -> {
             try {
+                System.err.println( "notify subscription CREATE: " + e + " // " + resource );
                 e.resourceCreated(resource);
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -127,6 +128,7 @@ public class SubscriptionManager implements RootResource {
     public void resourceUpdated(Resource resource) {
         getSubscriptions(resource).forEach((e) -> {
             try {
+                System.err.println( "notify subscription UPDATE: " + e + " // " + resource );
                 e.resourceUpdated(resource);
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -137,6 +139,7 @@ public class SubscriptionManager implements RootResource {
     public void resourceDeleted(Resource resource) {
         getSubscriptions(resource).forEach((e) -> {
             try {
+                System.err.println( "notify subscription DELETE: " + e + " // " + resource );
                 e.resourceDeleted(resource);
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -207,6 +210,7 @@ public class SubscriptionManager implements RootResource {
     }
 
     public void addSubscription(Subscription subscription) {
+        System.err.println( "ADD SUBSCRIPTION: " + subscription );
         this.subscriptions.add(subscription);
     }
 

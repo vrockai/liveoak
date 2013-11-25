@@ -13,7 +13,9 @@ import io.liveoak.spi.resource.async.Resource;
 import io.liveoak.spi.state.ResourceState;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.xnio.channels.StreamSourceChannel;
 
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -43,7 +45,7 @@ public class ResourceCodec {
         return result;
     }
 
-    public ResourceState decode(ByteBuf resource) throws Exception {
+    public ResourceState decode(InputStream resource) throws Exception {
         return this.decoder.decode(resource);
     }
 

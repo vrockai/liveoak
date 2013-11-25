@@ -8,6 +8,7 @@ package io.liveoak.security.policy.uri.complex;
 import io.liveoak.spi.ResourceParams;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class ResourceParamsDecorator implements ResourceParams {
     }
 
     @Override
-    public List<String> values(String name) {
+    public Deque<String> values(String name) {
         return delegate.values(name);
     }
 

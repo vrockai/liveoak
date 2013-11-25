@@ -10,8 +10,7 @@ import io.liveoak.spi.state.ResourceState;
 import io.liveoak.stomp.StompMessage;
 import io.liveoak.stomp.client.StompClient;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBufInputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -36,18 +34,20 @@ import static org.fest.assertions.Assertions.assertThat;
 public class BasicServerTest {
 
     private DefaultContainer container;
-    private UnsecureServer server;
+    private ResourceServer server;
 
     protected CloseableHttpClient httpClient;
 
     @Before
     public void setUpServer() throws Exception {
+        System.err.println( "*** SET UP SERVER" );
         this.container = new DefaultContainer();
         InMemoryDBResource resource = new InMemoryDBResource("memory");
         this.container.registerResource(resource, new SimpleConfig());
 
-        this.server = new UnsecureServer(this.container, InetAddress.getByName("localhost"), 8080);
+        this.server = ResourceServer.createDefaultResourceServer(this.container, "localhost" );
         this.server.start();
+        System.err.println( "*** SET UP SERVER COMPLETE" );
     }
 
     @Before
@@ -62,27 +62,18 @@ public class BasicServerTest {
 
     @After
     public void tearDownServer() throws Exception {
+        System.err.println( "*** TEAR DOWN SERVER" );
         this.server.stop();
         System.err.flush();
+        System.err.println( "*** TEAR DOWN SERVER COMPLETE" );
     }
 
     protected ResourceState decode(HttpResponse response) throws Exception {
-        ByteBuf buffer = Unpooled.buffer();
-        ByteBufOutputStream out = new ByteBufOutputStream(buffer);
-        response.getEntity().writeTo(out);
-        out.flush();
-        out.close();
-        System.err.println("===================");
-        System.err.println(buffer.toString(Charset.defaultCharset()));
-        System.err.println("===================");
-        return this.container.getCodecManager().decode(MediaType.JSON, buffer);
+        return this.container.getCodecManager().decode(MediaType.JSON, response.getEntity().getContent());
     }
 
     protected ResourceState decode(ByteBuf buffer) throws Exception {
-        System.err.println("===================");
-        System.err.println(buffer.toString(Charset.defaultCharset()));
-        System.err.println("===================");
-        return this.container.getCodecManager().decode(MediaType.JSON, buffer);
+        return this.container.getCodecManager().decode(MediaType.JSON, new ByteBufInputStream( buffer ) );
     }
 
     @Test
@@ -91,8 +82,10 @@ public class BasicServerTest {
         CompletableFuture<StompMessage> peopleCreationNotification = new CompletableFuture<>();
         CompletableFuture<StompMessage> bobCreationNotification = new CompletableFuture<>();
 
+
+        System.err.println( "ADDING SUBSCRIPTION" );
         StompClient stompClient = new StompClient();
-        stompClient.connect("localhost", 8080, (client) -> {
+        stompClient.connect("localhost", 8675, (client) -> {
             // Subscribe only to the contents of /memory/people, and not the
             // memory/people itself plus contents.
             client.subscribe("/memory/people/*", (msg) -> {
@@ -103,6 +96,8 @@ public class BasicServerTest {
                 }
             });
         });
+        Thread.sleep( 200 );
+        System.err.println( "DONE ADDING SUBSCRIPTION" );
 
         Header header = new BasicHeader("Accept", "application/json");
 
@@ -227,8 +222,9 @@ public class BasicServerTest {
         assertThat(state.getProperty("name")).isEqualTo("bob");
 
         // check STOMP
+        System.err.println("TEST #STOMP");
 
-        StompMessage obj = bobCreationNotification.get(30000, TimeUnit.SECONDS);
+        StompMessage obj = bobCreationNotification.get(5, TimeUnit.SECONDS);
         assertThat(obj).isNotNull();
 
         ResourceState bobObjState = (ResourceState) decode(obj.content());
@@ -237,6 +233,7 @@ public class BasicServerTest {
         assertThat(((ResourceState) state).getProperty("id")).isEqualTo(bobObjState.getProperty("id"));
 
         response.close();
+        System.err.println("TEST #STOMP COMPLETE");
     }
 
 

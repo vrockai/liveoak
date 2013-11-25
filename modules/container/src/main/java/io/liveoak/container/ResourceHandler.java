@@ -20,22 +20,9 @@ public class ResourceHandler extends SimpleChannelInboundHandler<ResourceRequest
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ResourceRequest msg) throws Exception {
-        String firstSegment = msg.resourcePath().head();
-
-        switch (msg.requestType()) {
-            case CREATE:
-                new CreateResponder(container.workerPool(), container, msg, ctx).doRead(firstSegment, container);
-                break;
-            case READ:
-                new ReadResponder(container.workerPool(), container, msg, ctx).doRead(firstSegment, container);
-                break;
-            case UPDATE:
-                new UpdateResponder(container.workerPool(), container, msg, ctx).doRead(firstSegment, container);
-                break;
-            case DELETE:
-                new DeleteResponder(container.workerPool(), container, msg, ctx).doRead(firstSegment, container);
-                break;
-        }
+        new ResourceRequestDispatcher(this.container).dispatch(msg, (response) -> {
+            ctx.writeAndFlush( response );
+        });
     }
 
     private DefaultContainer container;

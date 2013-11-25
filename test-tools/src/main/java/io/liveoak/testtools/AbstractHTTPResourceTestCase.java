@@ -6,8 +6,8 @@
 package io.liveoak.testtools;
 
 import io.liveoak.container.DefaultContainer;
+import io.liveoak.container.ResourceServer;
 import io.liveoak.container.SimpleConfig;
-import io.liveoak.container.UnsecureServer;
 import io.liveoak.spi.Config;
 import io.liveoak.spi.resource.RootResource;
 import org.apache.http.client.config.RequestConfig;
@@ -22,7 +22,7 @@ import org.junit.Before;
  */
 public abstract class AbstractHTTPResourceTestCase extends AbstractTestCase {
 
-    private UnsecureServer server;
+    private ResourceServer server;
     private DefaultContainer container;
     protected CloseableHttpClient httpClient;
 
@@ -47,7 +47,7 @@ public abstract class AbstractHTTPResourceTestCase extends AbstractTestCase {
     public void setUpServer() throws Exception {
         this.container = new DefaultContainer();
         this.container.registerResource(createRootResource(), createConfig());
-        this.server = new UnsecureServer(this.container, "localhost", 8080);
+        this.server = ResourceServer.createDefaultResourceServer(this.container, "localhost");
         this.server.start();
     }
 

@@ -17,8 +17,10 @@ import io.liveoak.spi.state.ResourceState;
 import org.fest.assertions.Fail;
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -356,8 +358,8 @@ public class MongoDBCollectionReadTest extends BaseMongoDBTest {
         }
 
         @Override
-        public List<String> values(String name) {
-            List list = new ArrayList<String>();
+        public Deque<String> values(String name) {
+            Deque<String> list = new ArrayDeque<>();
             list.add(map.get(name));
             return list;
         }

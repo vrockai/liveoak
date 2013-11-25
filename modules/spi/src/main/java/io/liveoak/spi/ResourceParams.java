@@ -7,6 +7,7 @@ package io.liveoak.spi;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ public interface ResourceParams {
         }
 
         @Override
-        public List<String> values(String name) {
+        public Deque<String> values(String name) {
             return null;
         }
 
@@ -48,7 +49,7 @@ public interface ResourceParams {
 
     String value(String name);
 
-    List<String> values(String name);
+    Deque<String> values(String name);
 
     int intValue(String name, int defaultValue);
 }

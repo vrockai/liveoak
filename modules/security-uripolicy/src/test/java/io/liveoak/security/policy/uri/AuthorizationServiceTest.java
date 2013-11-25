@@ -19,7 +19,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -103,16 +105,16 @@ public class AuthorizationServiceTest {
         Assert.assertFalse(service.isAuthorized(req3));
 
         // Allowed thanks to DemoSimpleURIPolicy.rule2
-        Map<String, List<String>> req4params = new HashMap<>();
-        req4params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req4params.put("param2", Arrays.asList(new String[]{"10"}));
+        Map<String, Deque<String>> req4params = new HashMap<>();
+        req4params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req4params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"10"})));
         AuthorizationRequestContext req4 = createAuthRequestContext("/droolsTest/foo/bar", RequestType.READ, new String[]{"role1"}, new String[]{}, AuthTestResourceParams.instance(req4params));
         Assert.assertTrue(service.isAuthorized(req4));
 
         // Ignored in DemoURIPolicy.rule2 becaused foo<10 and /droolsTest/foo/bar is not mapped to DemoSimpleURIPolicy
-        Map<String, List<String>> req5params = new HashMap<>();
-        req5params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req5params.put("param2", Arrays.asList(new String[]{"9"}));
+        Map<String, Deque<String>> req5params = new HashMap<>();
+        req5params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req5params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"9"})));
         AuthorizationRequestContext req5 = createAuthRequestContext("/droolsTest/foo/bar", RequestType.READ, new String[]{"role1"}, new String[]{}, AuthTestResourceParams.instance(req5params));
         Assert.assertFalse(service.isAuthorized(req5));
     }

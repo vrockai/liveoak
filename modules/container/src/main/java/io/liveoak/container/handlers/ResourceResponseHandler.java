@@ -1,11 +1,7 @@
-/*
- * Copyright 2013 Red Hat, Inc. and/or its affiliates.
- *
- * Licensed under the Eclipse Public License version 1.0, available at http://www.eclipse.org/legal/epl-v10.html
- */
-package io.liveoak.container.protocols.http;
+package io.liveoak.container.handlers;
 
 import io.liveoak.container.ResourceErrorResponse;
+import io.liveoak.container.ResourceRequest;
 import io.liveoak.container.ResourceResponse;
 import io.liveoak.container.codec.EncodingResult;
 import io.liveoak.container.codec.IncompatibleMediaTypeException;
@@ -14,32 +10,34 @@ import io.liveoak.container.codec.ResourceCodecManager;
 import io.liveoak.spi.RequestContext;
 import io.liveoak.spi.resource.async.Resource;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-
-import java.util.List;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HttpString;
+import org.xnio.channels.StreamSinkChannel;
 
 /**
  * @author Bob McWhirter
  */
-public class HttpResourceResponseEncoder extends MessageToMessageEncoder<ResourceResponse> {
+public class ResourceResponseHandler implements HttpHandler {
 
-    public HttpResourceResponseEncoder(ResourceCodecManager codecManager) {
+    public ResourceResponseHandler(ResourceCodecManager codecManager) {
         this.codecManager = codecManager;
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, ResourceResponse msg, List<Object> out) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        ResourceRequest request = exchange.getAttachment(ResourceRequest.ATTACHMENT_KEY);
+        ResourceResponse response = exchange.getAttachment(ResourceResponse.ATTACHMENT_KEY);
 
         int responseStatusCode = 0;
         String responseMessage = null;
 
         boolean shouldEncodeState = false;
-        switch (msg.responseType()) {
+        switch (response.responseType()) {
             case CREATED:
                 responseStatusCode = HttpResponseStatus.CREATED.code();
                 responseMessage = HttpResponseStatus.CREATED.reasonPhrase();
@@ -61,8 +59,8 @@ public class HttpResourceResponseEncoder extends MessageToMessageEncoder<Resourc
                 shouldEncodeState = true;
                 break;
             case ERROR:
-                if (msg instanceof ResourceErrorResponse) {
-                    switch (((ResourceErrorResponse) msg).errorType()) {
+                if (response instanceof ResourceErrorResponse) {
+                    switch (((ResourceErrorResponse) response).errorType()) {
                         case NOT_AUTHORIZED:
                             responseStatusCode = HttpResponseStatus.FORBIDDEN.code();
                             responseMessage = HttpResponseStatus.FORBIDDEN.reasonPhrase();
@@ -104,45 +102,51 @@ public class HttpResourceResponseEncoder extends MessageToMessageEncoder<Resourc
                 break;
         }
 
-        DefaultFullHttpResponse response = null;
         HttpResponseStatus responseStatus = null;
 
         EncodingResult encodingResult = null;
         if (shouldEncodeState) {
-            MediaTypeMatcher matcher = msg.inReplyTo().mediaTypeMatcher();
+            MediaTypeMatcher matcher = response.inReplyTo().mediaTypeMatcher();
             try {
-                encodingResult = encodeState(msg.inReplyTo().requestContext(), matcher, msg.resource());
+                encodingResult = encodeState(request.requestContext(), matcher, response.resource());
             } catch (IncompatibleMediaTypeException e) {
                 e.printStackTrace();
-                responseStatus = new HttpResponseStatus(HttpResponseStatus.NOT_ACCEPTABLE.code(), e.getMessage());
-                response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
-                response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, 0);
-                out.add(response);
+                //responseStatus = new HttpResponseStatus(HttpResponseStatus.NOT_ACCEPTABLE.code(), e.getMessage());
+                exchange.setResponseCode(HttpResponseStatus.NOT_ACCEPTABLE.code());
+                exchange.setResponseContentLength(0L);
+                exchange.endExchange();
                 return;
             } catch (Throwable e) {
                 e.printStackTrace();
-                responseStatus = new HttpResponseStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase());
-                response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
-                response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, 0);
-                out.add(response);
+                //responseStatus = new HttpResponseStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase());
+                //response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
+                //response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, 0);
+                //out.add(response);
+                exchange.setResponseCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
+                exchange.setResponseContentLength(0);
+                exchange.endExchange();
                 return;
             }
         }
 
-        responseStatus = new HttpResponseStatus(responseStatusCode, responseMessage);
+        //responseStatus = new HttpResponseStatus(responseStatusCode, responseMessage);
 
-        if (encodingResult != null) {
-            ByteBuf content = encodingResult.encoded();
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus, content);
-            response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
-            response.headers().add(HttpHeaders.Names.LOCATION, msg.resource().uri().toString());
-            response.headers().add(HttpHeaders.Names.CONTENT_TYPE, encodingResult.mediaType());
-        } else {
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
-            response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, 0);
+        try {
+            exchange.setResponseCode(responseStatusCode);
+            if (encodingResult != null) {
+                ByteBuf content = encodingResult.encoded();
+                exchange.setResponseContentLength(content.readableBytes());
+                exchange.getResponseHeaders().put(new HttpString("Location"), response.resource().uri().toString());
+                exchange.getResponseHeaders().put(new HttpString("Content-Type"), encodingResult.mediaType().toString());
+                StreamSinkChannel channel = exchange.getResponseChannel();
+                channel.writeFinal(content.nioBuffer());
+            } else {
+                exchange.setResponseContentLength(0);
+            }
+            exchange.endExchange();
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
-
-        out.add(response);
     }
 
     protected EncodingResult encodeState(RequestContext ctx, MediaTypeMatcher mediaTypeMatcher, Resource resource) throws Exception {

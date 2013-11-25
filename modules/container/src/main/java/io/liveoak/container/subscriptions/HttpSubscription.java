@@ -19,12 +19,13 @@ import java.util.UUID;
  */
 public class HttpSubscription implements Subscription {
 
-    public HttpSubscription(SubscriptionManager subscriptionManager, HttpClient httpClient, String path, URI destination, ResourceCodec codec) {
+    public HttpSubscription(SubscriptionManager subscriptionManager, HttpClient httpClient, String path, URI destination, String mediaType, ResourceCodec codec) {
         this.subscriptionManager = subscriptionManager;
         this.id = UUID.randomUUID().toString();
         this.httpClient = httpClient;
         this.resourcePath = new ResourcePath(path);
         this.destination = destination;
+        this.mediaType = mediaType;
         this.codec = codec;
     }
 
@@ -75,6 +76,7 @@ public class HttpSubscription implements Subscription {
         });
 
         request.setChunked(true);
+        request.headers().set( "Content-Type", this.mediaType );
 
         RequestContext requestContext = new RequestContext.Builder().build();
         ByteBuf encoded = codec.encode(requestContext, resource);
@@ -106,6 +108,7 @@ public class HttpSubscription implements Subscription {
     private HttpClient httpClient;
     private ResourcePath resourcePath;
     private final URI destination;
+    private String mediaType;
     private ResourceCodec codec;
 
 }

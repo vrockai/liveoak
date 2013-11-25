@@ -16,11 +16,14 @@ import io.liveoak.spi.ReturnFields;
 import io.liveoak.spi.SecurityContext;
 import io.liveoak.spi.Sorting;
 import io.liveoak.spi.state.ResourceState;
+import io.undertow.util.AttachmentKey;
 
 /**
  * @author Bob McWhirter
  */
 public class ResourceRequest {
+
+    public static final AttachmentKey<ResourceRequest> ATTACHMENT_KEY = AttachmentKey.create( ResourceRequest.class );
 
     private ResourceRequest(RequestType type, ResourcePath path) {
         if (type == null) {

@@ -7,8 +7,8 @@ package io.liveoak.bootstrap;
 
 import io.liveoak.bootstrap.deployer.ConfigDeployer;
 import io.liveoak.container.DefaultContainer;
+import io.liveoak.container.ResourceServer;
 import io.liveoak.container.SimpleConfig;
-import io.liveoak.container.UnsecureServer;
 import io.liveoak.container.resource.ContainerResource;
 
 /**
@@ -23,7 +23,7 @@ public class Bootstrap {
         System.err.println("Booting up the mBaaS");
 
         DefaultContainer container = new DefaultContainer();
-        UnsecureServer server = new UnsecureServer(container, "localhost", 8080);
+        ResourceServer server = ResourceServer.createDefaultResourceServer( container, "localhost" );
 
         container.registerResource(new ContainerResource("_container"), new SimpleConfig());
 

@@ -17,8 +17,10 @@ import io.liveoak.spi.ResourcePath;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,44 +60,44 @@ public class URIPolicyTest {
         Assert.assertEquals(AuthorizationDecision.IGNORE, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request2)));
         Assert.assertEquals(AuthorizationDecision.REJECT, uriPolicy.isAuthorized(new AuthorizationRequestContext(evil, request2)));
 
-        Map<String, List<String>> req3params = new HashMap<>();
-        req3params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req3params.put("param2", Arrays.asList(new String[]{"11"}));
+        Map<String, Deque<String>> req3params = new HashMap<>();
+        req3params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req3params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"11"})));
         RequestContext request3 = new AuthTestRequestContext(RequestType.READ, new ResourcePath("/droolsTest/foo/bar"), AuthTestResourceParams.instance(req3params));
         // Accepted because of rule2 (Both URI and parameter conditions match)
         Assert.assertEquals(AuthorizationDecision.ACCEPT, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request3)));
         Assert.assertEquals(AuthorizationDecision.REJECT, uriPolicy.isAuthorized(new AuthorizationRequestContext(evil, request3)));
 
-        Map<String, List<String>> req4params = new HashMap<>();
-        req4params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req4params.put("param2", Arrays.asList(new String[]{"9"}));
+        Map<String, Deque<String>> req4params = new HashMap<>();
+        req4params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req4params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"9"})));
         RequestContext request4 = new AuthTestRequestContext(RequestType.READ, new ResourcePath("/droolsTest/foo/bar"), AuthTestResourceParams.instance(req4params));
         // Ignored. Doesn't match rule2 because param2 is lower than 10
         Assert.assertEquals(AuthorizationDecision.IGNORE, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request4)));
         Assert.assertEquals(AuthorizationDecision.REJECT, uriPolicy.isAuthorized(new AuthorizationRequestContext(evil, request4)));
 
-        Map<String, List<String>> req5params = new HashMap<>();
-        req5params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req5params.put("param2", Arrays.asList(new String[]{"baz"}));
-        req5params.put("param3", Arrays.asList(new String[]{"john"}));
+        Map<String, Deque<String>> req5params = new HashMap<>();
+        req5params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req5params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"baz"})));
+        req5params.put("param3", new ArrayDeque<>(Arrays.asList(new String[]{"john"})));
         RequestContext request5 = new AuthTestRequestContext(RequestType.READ, new ResourcePath("/droolsTest/foo/bar/baz"), AuthTestResourceParams.instance(req5params));
         // Accepted because of rule3
         Assert.assertEquals(AuthorizationDecision.ACCEPT, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request5)));
         Assert.assertEquals(AuthorizationDecision.REJECT, uriPolicy.isAuthorized(new AuthorizationRequestContext(evil, request5)));
 
-        Map<String, List<String>> req6params = new HashMap<>();
-        req6params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req6params.put("param2", Arrays.asList(new String[]{"baz"}));
-        req6params.put("param3", Arrays.asList(new String[]{"mary"}));
+        Map<String, Deque<String>> req6params = new HashMap<>();
+        req6params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req6params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"baz"})));
+        req6params.put("param3", new ArrayDeque<>(Arrays.asList(new String[]{"mary"})));
         RequestContext request6 = new AuthTestRequestContext(RequestType.READ, new ResourcePath("/droolsTest/foo/bar/baz"), AuthTestResourceParams.instance(req6params));
         // Ignored. Doesn't match rule3 because param3 has different value than actual username (john)
         Assert.assertEquals(AuthorizationDecision.IGNORE, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request6)));
         Assert.assertEquals(AuthorizationDecision.REJECT, uriPolicy.isAuthorized(new AuthorizationRequestContext(evil, request6)));
 
-        Map<String, List<String>> req7params = new HashMap<>();
-        req7params.put("param1", Arrays.asList(new String[]{"foo"}));
-        req7params.put("param2", Arrays.asList(new String[]{"baaz"}));
-        req7params.put("param3", Arrays.asList(new String[]{"john"}));
+        Map<String, Deque<String>> req7params = new HashMap<>();
+        req7params.put("param1", new ArrayDeque<>(Arrays.asList(new String[]{"foo"})));
+        req7params.put("param2", new ArrayDeque<>(Arrays.asList(new String[]{"baaz"})));
+        req7params.put("param3", new ArrayDeque<>(Arrays.asList(new String[]{"john"})));
         RequestContext request7 = new AuthTestRequestContext(RequestType.READ, new ResourcePath("/droolsTest/foo/bar/baz"), AuthTestResourceParams.instance(req7params));
         // Ignored. Doesn't match rule3 because param2 has different value than the parsed value from regex from URI (baz)
         Assert.assertEquals(AuthorizationDecision.IGNORE, uriPolicy.isAuthorized(new AuthorizationRequestContext(john, request7)));

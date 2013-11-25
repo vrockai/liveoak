@@ -7,9 +7,11 @@ package io.liveoak.container.codec;
 
 import io.liveoak.spi.state.ResourceState;
 import io.netty.buffer.ByteBuf;
+import org.xnio.channels.StreamSourceChannel;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public interface ResourceDecoder {
-    ResourceState decode(ByteBuf resource) throws IOException;
+    ResourceState decode(InputStream in) throws IOException;
 }

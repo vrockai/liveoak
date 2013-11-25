@@ -6,9 +6,11 @@
 package io.liveoak.container.responders;
 
 import io.liveoak.container.ResourceRequest;
+import io.liveoak.container.ResourceResponseSink;
 import io.liveoak.spi.resource.async.Resource;
 import io.liveoak.spi.state.ResourceState;
 import io.netty.channel.ChannelHandlerContext;
+import io.undertow.server.HttpServerExchange;
 
 import java.util.concurrent.Executor;
 
@@ -17,8 +19,8 @@ import java.util.concurrent.Executor;
  */
 public class UpdateResponder extends TraversingResponder {
 
-    public UpdateResponder(Executor executor, Resource root, ResourceRequest inReplyTo, ChannelHandlerContext ctx) {
-        super(executor, root, inReplyTo, ctx);
+    public UpdateResponder(Executor executor, Resource root, ResourceRequest inReplyTo, ResourceResponseSink sink) {
+        super(executor, root, inReplyTo, sink );
     }
 
     @Override

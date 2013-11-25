@@ -88,11 +88,11 @@ public class DefaultContainer implements Container, Resource {
         return this.vertx;
     }
 
-    SubscriptionManager getSubscriptionManager() {
+    public SubscriptionManager getSubscriptionManager() {
         return this.subscriptionManager;
     }
 
-    Executor workerPool() {
+    public Executor workerPool() {
         return this.workerPool;
     }
 

@@ -15,6 +15,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -27,11 +28,10 @@ public class JSONDecoder implements ResourceDecoder {
     }
 
     @Override
-    public ResourceState decode(ByteBuf resource) throws IOException {
+    public ResourceState decode(InputStream in) throws IOException {
         JsonFactory factory = new JsonFactory();
         factory.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
         factory.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-        ByteBufInputStream in = new ByteBufInputStream(resource);
         JsonParser parser = factory.createParser(in);
         parser.nextToken();
 
