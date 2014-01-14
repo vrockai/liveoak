@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" ng-app="loApp">
+
+<head>
+    <meta charset="utf-8">
+    <title>LiveOak</title>
+
+    <link rel="icon" href="img/favicon.ico">
+
+    <!-- Frameworks -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="css/sprites.css">
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic'>
+
+    <!-- RCUE styles -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/icons.css">
+    <link rel="stylesheet" href="css/tables.css">
+    <link href="css/login-register.css" rel="stylesheet" />
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="css/admin-console.css">
+    <link href="lib/select2/select2.css" rel="stylesheet">
+
+    <script src="lib/jquery/jquery-1.10.2.js" type="text/javascript"></script>
+    <script src="lib/select2/select2.js" type="text/javascript"></script>
+
+    <script src="lib/angular/angular.js"></script>
+    <script src="lib/angular/angular-route.js"></script>
+    <script src="lib/angular/angular-resource.js"></script>
+    <script src="lib/ui-bootstrap/ui-bootstrap-tpls-0.9.0.js"></script>
+
+    <!--
+    <script src="lib/jquery/jquery.idletimer.js" type="text/javascript"></script>
+    <script src="lib/jquery/jquery.idletimeout.js" type="text/javascript"></script>
+    -->
+
+    <script src="js/app.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/directives.js"></script>
+    <!--<script src="js/controllers/global.js"></script>-->
+    <script src="js/controllers/global.js"></script>
+    <script src="js/controllers/login.js"></script>
+
+    <!--
+    <script src="js/controllers/applications.js"></script>
+    <script src="js/controllers/oauth-clients.js"></script>
+    <script src="js/controllers/users.js"></script>
+    <script src="js/loaders.js"></script>
+    <script src="js/services.js"></script>
+    -->
+
+    <style>
+        [ng\:cloak], [ng-cloak], .ng-cloak {
+            /* display: none !important; */
+        }
+    </style>
+
+    <style type="text/css">
+        body.rcue-login-register {
+            background-image: url("img/login-screen-background.jpg");
+        }
+    </style>
+</head>
+
+<body class="" ng-class="authenticated ? 'admin-console' : 'rcue-login-register'" data-ng-controller="GlobalCtrl" ng-cloak>
+<div id="idletimeout">
+    You will be logged off in <strong><span></span> seconds</strong> due to inactivity.
+    <a id="idletimeout-resume" href="#">Click here to continue using this web page</a>.
+</div>
+
+
+<div class="feedback-aligner" data-ng-show="notification" data-ng-click="notification = null">
+    <div class="alert alert-{{notification.type}}"><strong>{{notification.header}}</strong> {{notification.message}}</div>
+</div>
+
+<div id="wrap">
+    <div data-ng-include data-src="'partials/menu.html'" ng-show="authenticated"></div>
+
+    <div data-ng-view id="view"></div>
+
+    <div id="loading" class="loading-backdrop">
+        <div class="loading">
+            <span>Loading...</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
