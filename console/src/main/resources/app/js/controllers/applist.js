@@ -20,7 +20,7 @@ loMod.controller('AppListCtrl', function($scope, $routeParams, $location, Notifi
   // New Application Wizard
 
   $scope.setupStep = 1;
-  $scope.setupType = "basic";
+  $scope.setupType = 'basic';
 
   $scope.nextStep = function() {
     $scope.setupStep++;
@@ -55,6 +55,6 @@ loMod.controller('AppListCtrl', function($scope, $routeParams, $location, Notifi
       function(httpResponse) {
         Notifications.httpError('Failed to create new application', httpResponse);
       });
-  }
+  };
 
 });
