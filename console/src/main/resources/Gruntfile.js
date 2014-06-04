@@ -37,7 +37,7 @@ module.exports = function (grunt) {
       },
       html: {
         files: ['<%= config.src %>/partials/*.html',
-          '<%= config.src %>/templates/*.html',
+          '<%= config.src %>/templates/**/*.html',
           '<%= config.src %>/*.html'],
         tasks: ['copy']
       },
