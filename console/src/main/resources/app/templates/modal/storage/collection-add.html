@@ -8,10 +8,16 @@
   <div class="modal-body">
     <div class="form-group clearfix">
       <label for="collection-name" class="col-sm-3 control-label">Collection Name</label>
-      <div class="col-sm-7" ng-class="{'has-error': loCollectionCreate['collection-name'].$dirty && !loCollectionCreate['collection-name'].$valid}">
-        <input type="text" class="form-control" id="collection-name" name="collection-name" ng-model="collectionName"
-               required autofocus ng-change="checkColName(collectionName)"/>
-        <span ng-show="loCollectionCreate['collection-name'].$dirty && !loCollectionCreate['collection-name'].$valid" class="help-block">Collection name already exists.</span>
+      <div class="col-sm-7">
+        {{loCollectionCreate.collectionName.$error}}
+        <input type="text" class="form-control" id="collectionName" name="collectionName" ng-model="collectionName"
+               required autofocus ng-change="checkColName(collectionName)" lo-validation/>
+        <span class="help-block ng-hide">
+          <ng-messages for="loCollectionCreate.collectionName.$error">
+            <ng-message when="required">Collection name is required.</ng-message>
+            <ng-message when="collectionName">Collection name already exists.</ng-message>
+          </ng-messages>
+        </span>
       </div>
     </div>
   </div>

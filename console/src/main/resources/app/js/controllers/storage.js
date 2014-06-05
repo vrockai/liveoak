@@ -413,9 +413,9 @@ loMod.controller('StorageCollectionCtrl', function($scope, $rootScope, $log, $ro
 
     $scope.checkColName = function (collectionName) {
       LoCollection.get({appId: currentApp.id, storageId: $routeParams.storageId, collectionId: collectionName}, function () {
-        $scope.modalScope.loCollectionCreate['collection-name'].$setValidity('collection-name', false);
+        $scope.modalScope.loCollectionCreate.collectionName.$setValidity('collectionName', false);
       }, function() {
-        $scope.modalScope.loCollectionCreate['collection-name'].$setValidity('collection-name', true);
+        $scope.modalScope.loCollectionCreate.collectionName.$setValidity('collectionName', true);
       });
     };
 

@@ -9,7 +9,8 @@ var loMod = angular.module('loApp', [
   'loApp.controllers',
   'ngResource',
   'ngAnimate',
-  'ui.bootstrap'
+  'ui.bootstrap',
+  'ngMessages'
 ]);
 
 loMod.config(['$routeProvider', function($routeProvider) {
@@ -378,6 +379,7 @@ loMod.config(function($httpProvider) {
   };
   $httpProvider.defaults.transformRequest.push(spinnerFunction);
 
-  $httpProvider.responseInterceptors.push('spinnerInterceptor');
+  // TODO - fix spinner interceptor. The element with id "loading" is missing in HTML code.
+  //$httpProvider.responseInterceptors.push('spinnerInterceptor');
   $httpProvider.interceptors.push('authInterceptor');
 });
