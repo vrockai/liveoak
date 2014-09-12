@@ -58,42 +58,29 @@ loMod.factory('FileReader', function($q) {
 /* Loaders - Loaders are used in the route configuration as resolve parameters */
 loMod.factory('Loader', function($q) {
   var loader = {};
-  loader.get = function(service, id) {
-    return function() {
-      var i = id && id();
-      var delay = $q.defer();
-      service.get(i, function(entry) {
-        delay.resolve(entry);
-      }, function() {
-        delay.reject('Unable to fetch ' + i);
-      });
-      return delay.promise;
+  var methods = [ 'get', 'getList', 'query'];
+
+  angular.forEach(methods, function(method){
+    loader[method] = function(service, id) {
+      return function() {
+        var i = id && id();
+        var delay = $q.defer();
+        service[method](i, function(entry) {
+          // If this is loResource, put loaded data into $live property and make it available for callback methods updates
+          if (service.$live){
+            service.$live = entry;
+            entry.$live = service.$live;
+          }
+          delay.resolve(entry);
+        }, function() {
+          delay.reject('Unable to fetch ' + i);
+        });
+
+        return delay.promise;
+      };
     };
-  };
-  loader.getList = function(service, id) {
-    return function() {
-      var i = id && id();
-      var delay = $q.defer();
-      service.getList(i, function(entry) {
-        delay.resolve(entry);
-      }, function() {
-        delay.reject('Unable to fetch ' + i);
-      });
-      return delay.promise;
-    };
-  };
-  loader.query = function(service, id) {
-    return function() {
-      var i = id && id();
-      var delay = $q.defer();
-      service.query(i, function(entry) {
-        delay.resolve(entry);
-      }, function() {
-        delay.reject('Unable to fetch ' + i);
-      });
-      return delay.promise;
-    };
-  };
+  });
+
   return loader;
 });
 
@@ -205,6 +192,72 @@ loMod.factory('LoApp', function($resource) {
       url: '/admin/applications/:appId/resources/:resourceId'
     }
   });
+});
+
+loMod.factory('loSubscribe', function($resource, LiveOak, $rootScope) {
+  return function(url, callback){
+
+    var _callback = function(){
+      LiveOak.subscribe(url + '', function (data, action) {
+        $rootScope.$apply(function(){
+          callback[action](data);
+        });
+      });
+    };
+
+    LiveOak.auth.updateToken(5).success(function() {
+      LiveOak.connect('Bearer', LiveOak.auth.token, _callback);
+    }).error(function() {
+      LiveOak.connect(_callback);
+    });
+  };
+});
+
+loMod.factory('loResource', function(loSubscribe){
+  return function(res, url, callback) {
+    res.$live = {};
+    loSubscribe(url, callback);
+    return res;
+  };
+});
+
+loMod.factory('LoLiveAppListLoader', function(Loader, LoLiveAppList) {
+  return Loader.getList(LoLiveAppList);
+});
+
+loMod.factory('LoLiveAppList', function($resource, LiveOak, $rootScope, loResource) {
+
+  var url = '/admin/applications/';
+
+  var res = $resource(url, {}, {
+    getList: {
+      method: 'GET',
+      params: { fields: '*(*)' }
+    }
+  });
+
+  var loRes = loResource(res, url, {
+      create: function (data) {
+        if(!res.$live.members){
+          res.$live.members = [];
+        }
+        res.$live.members.push(data);
+      },
+      delete: function (data) {
+        if(!res.$live.members){
+          return;
+        }
+
+        for(var i = 0; i < res.$live.members.length; i++){
+          if (data.id === res.$live.members[i].id) {
+            res.$live.members.splice(i, 1);
+            break;
+          }
+        }
+      }
+    });
+
+  return loRes;
 });
 
 loMod.factory('LoStorageLoader', function(Loader, LoStorage, $route) {

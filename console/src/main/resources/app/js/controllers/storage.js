@@ -2,6 +2,12 @@
 
 var loMod = angular.module('loApp.controllers.storage', []);
 
+loMod.controller('RestCtrl', function($scope, appList) {
+
+  $scope.appRes = appList;
+
+});
+
 loMod.controller('StorageCtrl', function($scope, $rootScope, $location, $routeParams, $log, LoStorage, loStorage, Notifications, currentApp) {
 
   $log.debug('StorageCtrl');

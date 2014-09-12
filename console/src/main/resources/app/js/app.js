@@ -31,6 +31,15 @@ loMod.config(['$routeProvider', function($routeProvider) {
         }
       }
     })
+    .when('/rest', {
+      templateUrl : '/admin/console/partials/rest.html',
+      controller: 'RestCtrl',
+      resolve: {
+        appList: function(LoLiveAppListLoader) {
+          return new LoLiveAppListLoader();
+        }
+      }
+    })
     .when('/applications', {
       templateUrl : '/admin/console/partials/applications.html',
       controller : 'AppListCtrl',
