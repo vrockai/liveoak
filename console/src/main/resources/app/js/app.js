@@ -23,6 +23,31 @@ loMod.config(function($compileProvider){
 
 loMod.config(['$routeProvider', function($routeProvider) {
   $routeProvider
+    // Switching between the /rest1 and /rest2 pages won't generate app list requests, since we're using "live" data on them.
+    .when('/applications/:appId/rest1', {
+      templateUrl : '/admin/console/partials/rest.html',
+      controller: 'RestCtrl',
+      resolve: {
+        currentApp: function(LoAppLoader) {
+          return new LoAppLoader();
+        },
+        appList: function(loLiveLoader, LoLiveAppList) {
+          return loLiveLoader(LoLiveAppList.getList);
+        }
+      }
+    })
+    .when('/applications/:appId/rest2', {
+      templateUrl : '/admin/console/partials/rest.html',
+      controller: 'RestCtrl',
+      resolve: {
+        currentApp: function(LoAppLoader) {
+          return new LoAppLoader();
+        },
+        appList: function(loLiveLoader, LoLiveAppList) {
+          return loLiveLoader(LoLiveAppList.getList);
+        }
+      }
+    })
     .when('/', {
       template: '',
       controller: 'HomeCtrl',

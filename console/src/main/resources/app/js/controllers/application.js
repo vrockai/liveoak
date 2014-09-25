@@ -2,6 +2,11 @@
 
 var loMod = angular.module('loApp.controllers.application', []);
 
+loMod.controller('RestCtrl', function($scope, appList, currentApp, $rootScope) {
+  $rootScope.curApp = currentApp;
+  $scope.appRes = appList;
+});
+
 loMod.controller('AppListCtrl', function($scope, $rootScope, $routeParams, $location, $modal, $filter, $route, Notifications, examplesList, loAppList, LoApp, LoStorage, LoPush, LoRealmApp, LoBusinessLogicScripts) {
 
   $rootScope.hideSidebar = true;

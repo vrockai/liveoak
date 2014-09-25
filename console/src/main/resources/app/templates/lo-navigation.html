@@ -1,14 +1,19 @@
 <aside class="lo-sidebar col-md-2 fixed clearfix" ng-controller="NavigationCtrl">
   <div class="dropdown">
     <a class="dropdown-toggle" href="#">{{curApp.name}}<b class="caret"></b></a>
+    <!-- Menu uses the "live" app list and it's automatically updated -->
     <ul class="dropdown-menu">
-      <li ng-repeat="app in applications" ng-class="{active: app.id == curApp.id}"><a ng-href="#/applications/{{app.id}}/{{current}}">{{ app.name | characters: 35 :true }}</a></li>
+      <li ng-repeat="app in applications | filter: {visible: true}" ng-class="{active: app.id == curApp.id}"><a ng-href="#/applications/{{app.id}}/{{current}}">{{ app.name | characters: 35 :true }}</a></li>
     </ul>
   </div>
 
   <nav class="navbar navbar-vertical" role="navigation">
     <div class="bs-sidebar">
       <ul>
+        <!-- Live service testing pages -->
+        <li ng-class="{active: current === 'rest1'}" class="dashboard"><a href="#/applications/{{curApp.id}}/rest1"><i class="fa fa-male"></i>Rest 1</a></li>
+        <li ng-class="{active: current === 'rest2'}" class="dashboard"><a href="#/applications/{{curApp.id}}/rest2"><i class="fa fa-female"></i>Rest 2</a></li>
+
         <li ng-class="{active: current === 'dashboard'}" class="dashboard"><a href="#/applications/{{curApp.id}}/dashboard"><i class="fa fa-tachometer"></i>Dashboard</a></li>
         <li ng-class="{active: current === 'storage'}" class="storage"><a href="#/applications/{{curApp.id}}/storage"><i class="fa fa-cloud"></i>Storage</a></li>
         <li ng-class="{active: current === 'security'}" class="security"><a href="#/applications/{{curApp.id}}/security/policies"><i class="fa fa-lock"></i>Security</a></li>
