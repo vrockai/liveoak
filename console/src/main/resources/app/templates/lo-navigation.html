@@ -3,7 +3,7 @@
     <a class="dropdown-toggle" href="#">{{curApp.name}}<b class="caret"></b></a>
     <!-- Menu uses the "live" app list and it's automatically updated -->
     <ul class="dropdown-menu">
-      <li ng-repeat="app in applications | filter: {visible: true}" ng-class="{active: app.id == curApp.id}"><a ng-href="#/applications/{{app.id}}/{{current}}">{{ app.name | characters: 35 :true }}</a></li>
+      <li ng-repeat="app in applications._lo._loLive.members | filter: {visible: true}" ng-class="{active: app.id == curApp.id}"><a ng-href="#/applications/{{app.id}}/{{current}}">{{ app.name | characters: 35 :true }}</a></li>
     </ul>
   </div>
 

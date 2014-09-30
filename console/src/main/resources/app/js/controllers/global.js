@@ -72,7 +72,7 @@ loMod.controller('HomeCtrl', function($log, $rootScope, $scope, $location, $filt
 loMod.controller('NavigationCtrl', function($scope, $rootScope, $filter, LoApp, loLiveLoader, LoLiveAppList) {
 
   loLiveLoader(LoLiveAppList.getList).then(function(data){
-    $scope.applications = data.members;
+    $scope.applications = data;
   });
 
   $scope.$watch('oPath', function() {

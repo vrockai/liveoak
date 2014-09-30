@@ -741,7 +741,7 @@ loMod.config(['$routeProvider', function($routeProvider) {
 }]);
 
 loMod.config(['$logProvider', function($logProvider) {
-  $logProvider.debugEnabled(false);
+  $logProvider.debugEnabled(true);
 }]);
 
 angular.element(document).ready(function () {

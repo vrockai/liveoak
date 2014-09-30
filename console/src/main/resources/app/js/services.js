@@ -532,90 +532,115 @@ loMod.factory('LoBusinessLogicScripts', function($resource) {
   });
 });
 
-// Loader service using the subscriptions to maintain live data. The service name starts with lowercase character,
-// because it's supposed to be used as a function.
-loMod.service('loLiveLoader', function($q, loSuperSubscribe) {
+// Loader service using the subscriptions to maintain live data.
+// The service name starts with lowercase character because it's supposed to be used as a function.
+loMod.service('loLiveLoader', function($q, loSuperSubscribe, $log) {
   return function(resourceMethod, resourceParameters, forceReload){
-    // function for actual loading of the data
-    function restGet(method, parameters){
-      var i = parameters && parameters();
 
-      // The live data are stored as a function "field" (in JS, even function is an object and can have fields)
-      // It's important to understand, that we're storing the data in a promise.
-      // (Naming it $live is not a best practice, I personally like it, but should probably rename it to loLive)
-      method.$live = method(i).$promise;
-      return method.$live;
+    var _deferedLiveLoader = $q.defer();
+    var _deferedLiveLoaderPromise = _deferedLiveLoader.promise;
+
+    var loaderKey = resourceParameters ? resourceParameters : '_loDefault';
+
+    if (!resourceMethod[loaderKey]){
+      $log.debug('Resource not loaded before.');
+      _deferedLiveLoaderPromise._lo = {};
+      resourceMethod[loaderKey] = _deferedLiveLoaderPromise;
     }
 
-    // You can force to reload the data
-    if (forceReload){
-      resourceMethod.$live = restGet(resourceMethod, resourceParameters);
-      return resourceMethod.$live;
+    // Load/Reload data if one of these occurs:
+    // 1. Reload is forced manually
+    // 2. Subscription even was fired, thus data may have changed
+    // 3. Data weren't loaded (This is the 1st attempt to access them)
+    if (forceReload || resourceMethod._loEvent || !resourceMethod[loaderKey]._lo.$promise){
+      $log.debug('Reloading a resource.');
+
+      // This will set the promise, so next time we know, it's not the 1st attempt to load data
+      resourceMethod[loaderKey]._lo = resourceMethod(resourceParameters);
+
+      // After the data are loaded, make a copy in _loLive field and resolve current promise
+      resourceMethod[loaderKey]._lo.$promise.then(function (data) {
+        data._loLive = angular.copy(data);
+        _deferedLiveLoader.resolve({_lo: angular.copy(data)});
+      });
+
+      // Reseting the subscription event fired flag
+      resourceMethod._loEvent = false;
+    } else {
+      $log.debug('Resource did not change. Returning cached data.');
+      _deferedLiveLoader.resolve({_lo: resourceMethod[loaderKey]._lo});
     }
-    if (resourceMethod.loSubscription) {
 
-      if (!resourceMethod.$live){
-        resourceMethod.$live = $q.defer().promise;
-      }
+    // If the method doesn't have callbacks subscribed
+    if (resourceMethod._loSubscription && !resourceMethod._loSubscription._loId) {
+      $log.debug('Resource subscription issued.');
 
-      // If the method doesn't have callbacks subscribed
-      if (!resourceMethod.loSubscription.$promise) {
-        // Load the current data
-        resourceMethod.$live = restGet(resourceMethod, resourceParameters);
+      var _deferedSubsId = $q.defer();
+      resourceMethod._loSubscription._loId = _deferedSubsId.promise;
 
-        // Subscribe callbacks
-        loSuperSubscribe(resourceMethod);
-
-        // And return
-        return resourceMethod.$live;
-
-      // If the method has already callbacks subscribed
-      } else {
-        // Just return the actual state (which is maintained by callbacks) in form of promise
-        var delay = $q.defer();
-        delay.resolve(resourceMethod.$live);
-
-        return delay.promise;
-      }
+      // Subscribe after the data were loaded === after _loLive was populated
+      _deferedLiveLoaderPromise.then(function(data){
+        return data._lo._loLive;
+      }).then(function(liveObject){
+        // Subscribe the resource after data were loaded;
+        return loSuperSubscribe(resourceMethod,liveObject);
+      }).then(function(subscriptionId){
+        _deferedSubsId.resolve(subscriptionId);
+      });
     }
+
+    return _deferedLiveLoaderPromise;
   };
 });
 
 // No magic here, just a service used for subscribing callback on particular URL. Have a look on resource definition
 // for better understanding.
-loMod.factory('loSuperSubscribe', function($resource, LiveOak, $rootScope, $q) {
-  return function(method){
+loMod.factory('loSuperSubscribe', function($resource, LiveOak, $rootScope, $q, $log) {
+  return function(method, liveObject){
+    $log.debug('loSuperSubscribe');
 
-    var delay = $q.defer();
-    method.loSubscription.$promise = delay.promise;
+    var deferedId = $q.defer();
+    var promiseId = deferedId.promise;
 
-    var url = method.loSubscription.url,
-        callbacks = method.loSubscription.callbacks;
+    // Field set to true once a subscription event was fired
+    method._loEvent = false;
 
-    function _callback(){
+    // Promise containing subscription ID once it was resolved
+    var url = method._loSubscription.url,
+        callbacks = method._loSubscription.callbacks;
+
+    function _connectCallback(){
       // Once the subscription is successful, the id is set. This is persistent as a field in the $resource itself, so
       // for each $resource we can tests if it has subscription callbacks already registered.
       // TODO: check if it's possible to find out if subscribe wasn't successful
-      delay.resolve(LiveOak.subscribe(url, function (data, action) {
-        $rootScope.$apply(function(){
-          if (callbacks[action]) {
-            callbacks[action](data);
-          }
-        });
-      }));
+      var subscriptionId = LiveOak.subscribe(url, function (subscriptionEventData, subscriptionEventAction) {
+        $log.debug('Issuing callback function.');
+        method._loEvent = true;
+
+        if (callbacks[subscriptionEventAction]) {
+          $log.debug('calling callback function.');
+          callbacks[subscriptionEventAction](subscriptionEventData, liveObject);
+        }
+      });
+
+      $log.debug('Resource subscription successful. Subscription ID is: ' + subscriptionId);
+      deferedId.resolve(subscriptionId);
     }
 
+    // Actual registering of callbacks
     LiveOak.auth.updateToken(5).success(function() {
-      LiveOak.connect('Bearer', LiveOak.auth.token, _callback);
+      LiveOak.connect('Bearer', LiveOak.auth.token, _connectCallback);
     }).error(function() {
-      LiveOak.connect(_callback);
+      LiveOak.connect(_connectCallback);
     });
+
+    return promiseId;
   };
 });
 
 // The resource definition. This resource could be used as a common $resource (as we did before), but if loaded
 // with loLiveLoader, it automatically updates it's data according to registered callback functions.
-loMod.factory('LoLiveAppList', function($resource) {
+loMod.factory('LoLiveAppList', function($resource, $log) {
 
   // Url of the original resource
   var url = '/admin/applications/',
@@ -628,38 +653,30 @@ loMod.factory('LoLiveAppList', function($resource) {
 
   // For each $resource functions we can register subscription callbacks. The subscription URL can be different to
   // the $resource URL.
-  res.getList.loSubscription = {
+  var _method = res.getList;
+
+  _method._loSubscription = {
     url: url,
     // Callbacks are maintaining the data structure based on subscription calls. The property is the subscription "action"
-    // and the value is a function(data), where data are data returned by subscription call. The only tricky part here
-    // is to have in mind, that we're working with promises, so the body would be often in the "then" method and we
-    // need to return the result in a form of promise, too.
+    // and the value is a function(data), where "data" are actual data returned by subscription call.
     callbacks: {
-      create: function (data) {
-        res.getList.$live.then(function(promise){
-          if(!promise.members) {
-            promise.members = [];
-          }
-
-          promise.members.push(data);
-          return promise;
-        });
+      create: function (data, liveObject) {
+        if(!liveObject.members) {
+          liveObject.members = [];
+        }
+        liveObject.members.push(data);
+        $log.debug(liveObject.members);
       },
-      delete: function (data) {
-        res.getList.$live.then(function(promise){
-          if(!promise.members) {
-            return promise;
+      delete: function (data, liveObject) {
+        if(!liveObject.members) {
+          return;
+        }
+        for(var i = 0; i < liveObject.members.length; i++){
+          if (data.id === liveObject.members[i].id) {
+            liveObject.members.splice(i, 1);
+            break;
           }
-
-          for(var i = 0; i < promise.members.length; i++){
-            if (data.id === promise.members[i].id) {
-              promise.members.splice(i, 1);
-              break;
-            }
-          }
-
-          return promise;
-        });
+        }
       }
     }
   };
